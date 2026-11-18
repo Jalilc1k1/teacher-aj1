@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Teacher AJ</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<style>
+:root{--green:#58CC02;--green-d:#58A700;--blue:#1CB0F6;--blue-d:#1899D6;--red:#FF4B4B;--red-d:#EA2B2B;--yellow:#FFC800;--yellow-d:#E5B400;--purple:#CE82FF;--orange:#FF9600;
+--bg:#fff;--card:#fff;--bd:#E5E5E5;--tx:#3C3C3C;--tx2:#777;--lock:#E5E5E5;--lock-d:#CFCFCF;--soft:#F7F7F7}
+[data-theme=dark]{--bg:#131F24;--card:#1F2C34;--bd:#37464F;--tx:#F1F7FB;--tx2:#9AAAB4;--lock:#37464F;--lock-d:#2B3A42;--soft:#18262D}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif;font-weight:700}
+#app{max-width:520px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+input,textarea{font:inherit;color:var(--tx);background:var(--soft);border:2px solid var(--bd);border-radius:14px;padding:12px 14px;width:100%;outline:none}
+input:focus,textarea:focus{border-color:var(--blue)}
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:2px solid var(--bd);background:var(--bg);gap:6px}
+.pill{display:flex;align-items:center;gap:5px;font-weight:900;font-size:16px;padding:4px 8px;border-radius:12px;cursor:pointer}
+main{flex:1;overflow-y:auto;padding:0 0 90px;scroll-behavior:smooth}
+nav{position:absolute;left:0;right:0;bottom:0;display:flex;background:var(--bg);border-top:2px solid var(--bd);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;font-size:22px;padding:6px 0;border-radius:12px;border:2px solid transparent;opacity:.7;line-height:1}
+nav button small{display:block;font-size:10px;margin-top:2px;font-weight:800;color:var(--tx2)}
+nav button.on{opacity:1;background:rgba(28,176,246,.15);border-color:var(--blue)}
+.btn{display:block;width:100%;padding:14px;border-radius:16px;font-weight:900;font-size:16px;letter-spacing:.6px;text-transform:uppercase;color:#fff;background:var(--green);box-shadow:0 4px 0 var(--green-d);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 0 0}
+.btn.blue{background:var(--blue);box-shadow:0 4px 0 var(--blue-d)}.btn.red{background:var(--red);box-shadow:0 4px 0 var(--red-d)}
+.btn.ghost{background:var(--card);color:var(--blue);border:2px solid var(--bd);box-shadow:0 4px 0 var(--bd)}
+.btn[disabled]{background:var(--lock);color:var(--tx2);box-shadow:0 4px 0 var(--lock-d);cursor:default}
+.card{background:var(--card);border:2px solid var(--bd);border-radius:18px;padding:14px;margin:12px 14px}
+.h{font-size:22px;font-weight:900;margin:16px 14px 4px}
+.muted{color:var(--tx2);font-size:14px}
+.banner{margin:14px;padding:16px;border-radius:18px;color:#fff;position:sticky;top:8px;z-index:5;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.banner b{display:block;font-size:18px;font-weight:900}
+.chap{text-align:center;margin:24px 0 8px;color:var(--tx2);font-weight:900;font-size:14px;display:flex;align-items:center;gap:10px;padding:0 20px}
+.chap:before,.chap:after{content:'';flex:1;height:2px;background:var(--bd)}
+.node{position:relative;width:74px;height:74px;margin:14px auto;display:block;border-radius:50%;font-size:30px;color:#fff}
+.node .st{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);font-size:12px;white-space:nowrap;letter-spacing:-1px}
+.node.lock{background:var(--lock);box-shadow:0 7px 0 var(--lock-d);color:var(--tx2);opacity:.9}
+.node.cur{animation:pulse 1.4s infinite}
+.node.cur:before{content:'СТАРТ';position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:var(--card);color:var(--green);border:2px solid var(--bd);border-radius:12px;padding:3px 10px;font-size:13px;font-weight:900;animation:bob 1.2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes bob{0%,100%{margin-top:0}50%{margin-top:-5px}}
+.sheet{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;z-index:30;animation:fade .15s}
+.sheet>div{background:var(--bg);width:100%;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));animation:up .2s}
+@keyframes up{from{transform:translateY(100%)}}@keyframes fade{from{opacity:0}}
+.full{position:absolute;inset:0;background:var(--bg);z-index:20;display:flex;flex-direction:column}
+.lh{display:flex;align-items:center;gap:12px;padding:14px}
+.bar{flex:1;height:16px;background:var(--lock);border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green);border-radius:10px;transition:width .3s;box-shadow:inset 0 4px 0 rgba(255,255,255,.25)}
+.x{background:none;font-size:26px;color:var(--tx2);padding:0 4px}
+.lb{flex:1;overflow-y:auto;padding:8px 18px}
+.q{font-size:24px;font-weight:900;margin:10px 0 18px}
+.say{background:var(--blue);color:#fff;width:46px;height:46px;border-radius:14px;box-shadow:0 3px 0 var(--blue-d);font-size:20px;margin-right:10px;vertical-align:middle}
+.opt{display:block;width:100%;text-align:left;background:var(--card);border:2px solid var(--bd);border-bottom-width:4px;border-radius:16px;padding:14px 16px;margin-bottom:10px;font-size:18px;font-weight:800}
+.opt.sel{border-color:var(--blue);background:rgba(28,176,246,.15);color:var(--blue)}
+.opt.ok{border-color:var(--green);background:rgba(88,204,2,.18)}.opt.bad{border-color:var(--red);background:rgba(255,75,75,.15)}
+.ans,.bank{display:flex;flex-wrap:wrap;gap:8px;padding:8px 0;min-height:56px}
+.ans{border-top:2px solid var(--bd);border-bottom:2px solid var(--bd);margin:14px 0;min-height:110px;align-content:flex-start}
+.chip{background:var(--card);border:2px solid var(--bd);border-bottom-width:4px;border-radius:14px;padding:9px 14px;font-size:17px;font-weight:800}
+.chip.used{background:var(--lock);color:transparent;border-color:var(--lock)}
+.foot{padding:14px 18px calc(14px + env(safe-area-inset-bottom));border-top:2px solid var(--bd)}
+.foot.ok{background:rgba(88,204,2,.18);border-color:transparent}.foot.bad{background:rgba(255,75,75,.15);border-color:transparent}
+.fb{font-size:19px;font-weight:900;margin-bottom:10px}.foot.ok .fb{color:var(--green)}.foot.bad .fb{color:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 14px}
+.stat{background:var(--card);border:2px solid var(--bd);border-radius:16px;padding:12px;text-align:center}.stat b{display:block;font-size:24px;font-weight:900}
+.row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:2px solid var(--bd)}
+.row.me{background:rgba(28,176,246,.15)}.row .n{width:26px;font-weight:900;color:var(--tx2)}
+.av{font-size:30px;width:46px;height:46px;border-radius:50%;background:var(--soft);border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex:none}
+.xpb{height:14px;background:var(--lock);border-radius:8px;overflow:hidden;margin:8px 0}.xpb i{display:block;height:100%;background:var(--yellow)}
+.seg{display:flex;gap:8px;margin:10px 14px}.seg button{flex:1;padding:10px;border-radius:14px;background:var(--card);border:2px solid var(--bd);font-weight:900}.seg button.on{border-color:var(--blue);color:var(--blue);background:rgba(28,176,246,.12)}
+.avs{display:flex;flex-wrap:wrap;gap:10px;padding:0 14px}.avs button{background:var(--card);border:2px solid var(--bd);border-radius:16px;width:66px;padding:8px 0;font-size:28px}.avs button.on{border-color:var(--green)}.avs small{display:block;font-size:12px;color:var(--tx2)}
+.shop{display:flex;align-items:center;gap:12px}.shop .ic{font-size:34px}.shop>div{flex:1}.shop .btn{width:auto;padding:10px 14px;font-size:14px}
+.badge{display:inline-block;background:var(--yellow);color:#4b3a00;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:900}
+.bars{display:flex;align-items:flex-end;gap:8px;height:110px;margin-top:10px}.bars div{flex:1;background:var(--blue);border-radius:6px 6px 0 0;min-height:3px;position:relative}.bars span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:11px;color:var(--tx2)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl td,.tbl th{padding:7px 4px;border-bottom:1px solid var(--bd);text-align:left}
+.toast{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 16px;border-radius:14px;z-index:99;font-weight:900;max-width:90%;text-align:center}
+.toast.ok{background:var(--green)}
+.cf{position:absolute;top:-20px;font-size:22px;animation:fall 2.2s linear forwards;z-index:60;pointer-events:none}@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:24px;gap:12px}
+.big{font-size:84px;line-height:1}
+label{display:block;margin:12px 0 6px;color:var(--tx2);font-size:14px}
+</style>
+</head>
+<body data-theme="dark">
+<div id="app"></div>
+<script>
+const tg = window.Telegram && Telegram.WebApp; if (tg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#131F24'); } catch(e){} }
+const $ = s => document.querySelector(s), app = $('#app');
+let S = { user: null, tab: 'learn', data: null, dev: false, tg: {} };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hap = t => { try { tg && tg.HapticFeedback.notificationOccurred(t); } catch(e){} };
+
+function toast(msg, ok) { const t = document.createElement('div'); t.className = 'toast' + (ok ? ' ok' : ''); t.textContent = msg; app.appendChild(t); setTimeout(() => t.remove(), 2500); }
+function theme() { document.body.dataset.theme = S.user ? S.user.theme : (localStorage.getItem('theme') || 'dark'); }
+function confetti() { const e = ['🎉','⭐','✨','🔥','💎','🎊']; for (let i = 0; i < 40; i++) { const d = document.createElement('div'); d.className = 'cf'; d.textContent = e[i % e.length]; d.style.left = Math.random() * 100 + '%'; d.style.animationDelay = Math.random() * .8 + 's'; app.appendChild(d); setTimeout(() => d.remove(), 3200); } }
+let ac; function beep(ok) { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.connect(g); g.connect(ac.destination); o.type = 'sine'; const t = ac.currentTime; o.frequency.setValueAtTime(ok ? 660 : 220, t); if (ok) o.frequency.setValueAtTime(880, t + .1); g.gain.setValueAtTime(.15, t); g.gain.exponentialRampToValueAtTime(.001, t + .3); o.start(t); o.stop(t + .3); } catch(e){} }
+function speak(t) { try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = .9; speechSynthesis.speak(u); } catch(e){} }
+
+// ---------- Старт ----------
+async function boot() {
+  try { const r = await api('/me'); S.user = r.user; S.dev = r.dev; S.tg = r.tg; } catch (e) { if (e.status !== 401) return fatal(e.message); }
+  theme();
+  if (!S.user) return register();
+  home();
+}
+function fatal(m) { app.innerHTML = `<div class="center"><div class="big">😕</div><b>${esc(m)}</b><button class="btn" onclick="location.reload()">Повторить</button></div>`; }
+
+function register() {
+  const t = S.tg || {}; const nick = t.username || localStorage.getItem('devUser') || '';
+  const needDev = S.dev && !(tg && tg.initData);
+  app.innerHTML = `<div class="center" style="justify-content:flex-start;padding-top:40px;text-align:left;align-items:stretch;overflow:auto">
+  <div style="text-align:center"><div class="big">🦉</div><div class="h" style="margin:8px 0">Teacher AJ</div><div class="muted">Английский шаг за шагом. Создайте профиль!</div></div>
+  <label>Ник (латиницей)</label><input id="rn" value="${esc(nick)}" placeholder="например, ali_2025" autocapitalize="off" autocomplete="off">
+  <label>Имя</label><input id="rf" value="${esc(t.first || '')}" placeholder="Имя">
+  <label>Фамилия</label><input id="rl" value="${esc(t.last || '')}" placeholder="Фамилия">
+  <div id="er" style="color:var(--red);min-height:22px;margin-top:8px"></div>
+  <button class="btn" id="go">Начать учиться</button></div>`;
+  $('#go').onclick = async () => {
+    const n = $('#rn').value.trim().replace(/^@/, '');
+    try { if (needDev) localStorage.setItem('devUser', n); const r = await api('/register', { nick: n, first: $('#rf').value, last: $('#rl').value }); S.user = r.user; theme(); home(); }
+    catch (e) { $('#er').textContent = e.message; if (needDev) localStorage.removeItem('devUser'); }
+  };
+}
+
+// ---------- Каркас ----------
+function home() {
+  const u = S.user; const tabs = [['learn','📚','Учёба'],['tasks','📝','Задания'],['rank','🏆','Рейтинг'],['shop','🛒','Магазин'],['me','👤','Профиль']];
+  if (u.role === 'teacher') tabs.push(['teach','🎓','Учитель']);
+  app.innerHTML = `<div class="top">
+    <div class="pill" onclick="S.tab='me';home()" title="Серия">🔥 <span style="color:var(--orange)">${u.streak}</span></div>
+    <div class="pill" onclick="S.tab='shop';home()">💎 <span style="color:var(--blue)">${u.gems}</span></div>
+    <div class="pill" onclick="S.tab='shop';home()">❤️ <span style="color:var(--red)">${u.role==='teacher'?'∞':u.hearts}</span></div>
+    <div class="pill" style="color:var(--yellow)">⚡ ${u.xp}${u.boost_left>0?' x2':''}</div></div>
+  <main id="main"></main>
+  <nav>${tabs.map(([k,i,l]) => `<button class="${S.tab===k?'on':''}" onclick="S.tab='${k}';home()">${i}<small>${l}</small></button>`).join('')}</nav>`;
+  ({ learn, tasks, rank, shop, me, teach })[S.tab]();
+}
+const M = h => { $('#main').innerHTML = h; };
+async function refresh() { const r = await api('/me'); S.user = r.user; }
+
+// ---------- Путь уроков ----------
+async function learn() {
+  M('<div class="center"><div class="big">⏳</div></div>');
+  S.data = await api('/lessons'); const d = S.data; let html = '';
+  for (const lv of d.levels) {
+    html += `<div class="banner" style="background:${lv.color};${lv.id===6?'color:#3b2f00':''}"><b>Уровень ${lv.id}: ${lv.name}</b>${lv.ru} · 10 глав · 50 уроков</div>`;
+    for (const ch of lv.chapters) {
+      html += `<div class="chap">Глава ${ch.n}: ${esc(ch.title)}</div>`;
+      ch.lessons.forEach((l, i) => {
+        const open = l.id <= d.next || S.user.role === 'teacher', cur = l.id === d.next, off = Math.round(Math.sin((i + ch.n) * 1.2) * 50);
+        const ic = ['🔤','🔤','🔁','💬','🏅'][i];
+        const cls = l.stars ? '' : cur ? 'cur' : open ? '' : 'lock';
+        const bg = l.stars ? `background:var(--yellow);box-shadow:0 7px 0 var(--yellow-d)` : open ? `background:${lv.color};box-shadow:0 7px 0 rgba(0,0,0,.25)` : '';
+        html += `<button id="L${l.id}" class="node ${cls}" style="${bg};transform:translateX(${off}px)" ${open?`onclick="lessonSheet(${l.id})"`:'disabled'}>${open?ic:'🔒'}${l.stars?`<span class="st">${'⭐'.repeat(l.stars)}</span>`:''}</button>`;
+      });
+    }
+  }
+  M(html); const el = $('#L' + d.next); if (el) el.scrollIntoView({ block: 'center' });
+}
+function lessonSheet(id) {
+  let L; for (const lv of S.data.levels) for (const ch of lv.chapters) for (const l of ch.lessons) if (l.id === id) L = { ...l, ch: ch.title, lv: lv.name };
+  const sh = document.createElement('div'); sh.className = 'sheet'; sh.onclick = e => { if (e.target === sh) sh.remove(); };
+  sh.innerHTML = `<div><div class="h" style="margin:0">${esc(L.title)}</div><div class="muted">${esc(L.lv)} · ${esc(L.ch)}</div><div style="margin:14px 0;font-size:18px">${L.stars?'Лучший результат: '+'⭐'.repeat(L.stars):'Новый урок · +10…25 ⚡ и до 5 💎'}</div><button class="btn">Начать</button></div>`;
+  sh.querySelector('.btn').onclick = () => { sh.remove(); startLesson(id); };
+  app.appendChild(sh);
+}
+
+// ---------- Плеер урока ----------
+let P;
+async function startLesson(id) {
+  try {
+    const l = await api('/lesson/' + id); await refresh();
+    P = { id, total: l.exercises.length, q: l.exercises.map(e => ({ ...e })), done: 0, mistakes: 0, cur: null, st: 'ask', sel: null, picked: [] };
+    const w = document.createElement('div'); w.className = 'full'; w.id = 'player'; app.appendChild(w); nextEx();
+  } catch (e) { if (e.code === 'no_hearts') noHearts(); else toast(e.message); }
+}
+function noHearts() {
+  const w = document.createElement('div'); w.className = 'full'; w.id = 'player';
+  w.innerHTML = `<div class="center"><div class="big">💔</div><div class="h">Жизни закончились</div><div class="muted">Жизнь восстанавливается каждые 30 минут. Или купите в магазине!</div>
+  <button class="btn blue" onclick="$('#player').remove();S.tab='shop';home()">В магазин</button><button class="btn ghost" onclick="$('#player').remove();home()">Позже</button></div>`; app.appendChild(w);
+}
+function nextEx() {
+  if (!P.q.length) return finish();
+  P.cur = P.q[0]; P.st = 'ask'; P.sel = null; P.picked = []; renderEx();
+}
+function renderEx() {
+  const e = P.cur, pct = Math.round(P.done / P.total * 100); let body = '';
+  const sp = e.say ? `<button class="say" onclick="speak(${JSON.stringify(e.say).replace(/"/g, '&quot;')})">🔊</button>` : '';
+  if (e.t === 'mcq') {
+    body = `<div class="muted">${e.p}</div><div class="q">${e.say && !e.hint ? sp : ''}${esc(e.q)}</div>${e.hint ? `<div class="muted" style="margin:-10px 0 14px">${esc(e.hint)}</div>` : ''}` +
+      e.opts.map((o, i) => `<button class="opt" id="o${i}" onclick="pick(${i})">${esc(o)}</button>`).join('');
+  } else if (e.t === 'type') {
+    body = `<div class="muted">${e.p}</div><div class="q">${sp}${esc(e.q)}</div><input id="ti" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Введите ответ" oninput="P.sel=this.value.trim()?1:null;$('#chk').disabled=!P.sel">`;
+  } else {
+    body = `<div class="muted">${e.p}</div><div class="q">${esc(e.q)}</div><div class="ans" id="ans"></div><div class="bank" id="bank">${e.words.map((w, i) => `<button class="chip" id="w${i}" onclick="tok(${i})">${esc(w)}</button>`).join('')}</div>`;
+  }
+  $('#player').innerHTML = `<div class="lh"><button class="x" onclick="quit()">✕</button><div class="bar"><i style="width:${pct}%"></i></div><b style="color:var(--red)">❤️ ${S.user.role==='teacher'?'∞':S.user.hearts}</b></div>
+  <div class="lb">${body}</div><div class="foot" id="foot"><button class="btn" id="chk" disabled onclick="check()">Проверить</button></div>`;
+  if (e.t === 'type') setTimeout(() => $('#ti') && $('#ti').focus(), 50);
+  if (e.t === 'mcq' && e.say && !e.hint && e.q === e.say) speak(e.say);
+}
+function pick(i) { if (P.st !== 'ask') return; P.sel = i; document.querySelectorAll('.opt').forEach((b, j) => b.classList.toggle('sel', i === j)); $('#chk').disabled = false; }
+function tok(i) {
+  if (P.st !== 'ask') return; const b = $('#w' + i);
+  if (P.picked.includes(i)) { P.picked = P.picked.filter(x => x !== i); b.classList.remove('used'); $('#a' + i)?.remove(); }
+  else { P.picked.push(i); b.classList.add('used'); const c = document.createElement('button'); c.className = 'chip'; c.id = 'a' + i; c.textContent = P.cur.words[i]; c.onclick = () => tok(i); $('#ans').appendChild(c); }
+  P.sel = P.picked.length ? 1 : null; $('#chk').disabled = !P.sel;
+}
+async function check() {
+  const e = P.cur; if (P.st !== 'ask') return; P.st = 'done'; let ok, right;
+  if (e.t === 'mcq') { ok = P.sel === e.a; right = e.opts[e.a]; document.querySelectorAll('.opt').forEach((b, j) => { if (j === e.a) b.classList.add('ok'); else if (j === P.sel) b.classList.add('bad'); b.classList.remove('sel'); }); }
+  else if (e.t === 'type') { const v = $('#ti').value.trim().toLowerCase(); ok = v === e.a.toLowerCase(); right = e.a; $('#ti').disabled = true; }
+  else { const got = P.picked.map(i => e.words[i]); ok = got.join(' ') === e.a.join(' '); right = e.a.join(' '); }
+  beep(ok); hap(ok ? 'success' : 'error');
+  if (e.say && ok) speak(e.say);
+  if (ok) { P.q.shift(); P.done++; }
+  else { P.mistakes++; P.q.push(P.q.shift()); try { const r = await api('/heart-lost', {}); S.user = r.user; } catch(x){} }
+  const out = !ok && S.user.role !== 'teacher' && S.user.hearts <= 0;
+  const f = $('#foot'); f.className = 'foot ' + (ok ? 'ok' : 'bad');
+  f.innerHTML = `<div class="fb">${ok ? ['Отлично! 🎉','Верно! 💪','Супер! ✨','Так держать! 🔥'][Math.floor(Math.random()*4)] : 'Правильный ответ: ' + esc(right)}</div><button class="btn ${ok ? '' : 'red'}" onclick="${out ? 'outOfHearts()' : 'nextEx()'}">${out ? 'Далее' : 'Продолжить'}</button>`;
+  document.querySelector('.lh b').textContent = '❤️ ' + (S.user.role === 'teacher' ? '∞' : S.user.hearts);
+}
+function outOfHearts() { $('#player').remove(); noHearts(); }
+function quit() {
+  const sh = document.createElement('div'); sh.className = 'sheet';
+  sh.innerHTML = `<div><div class="h" style="margin:0 0 8px">Выйти из урока?</div><div class="muted" style="margin-bottom:14px">Прогресс урока не сохранится.</div><button class="btn blue" id="st">Продолжить урок</button><button class="btn ghost" style="margin-top:12px" id="ex">Выйти</button></div>`;
+  sh.querySelector('#st').onclick = () => sh.remove(); sh.querySelector('#ex').onclick = () => { sh.remove(); $('#player').remove(); home(); }; app.appendChild(sh);
+}
+async function finish() {
+  let r; try { r = await api('/complete', { lessonId: P.id, mistakes: P.mistakes }); S.user = r.user; } catch (e) { toast(e.message); $('#player').remove(); return; }
+  confetti(); hap('success');
+  $('#player').innerHTML = `<div class="center"><div class="big">${'⭐'.repeat(r.stars)}</div><div class="h" style="margin:0">Урок пройден!</div>
+  <div class="grid" style="width:100%"><div class="stat"><b style="color:var(--yellow)">+${r.xp}</b>⚡ опыт${r.boosted?' (x2!)':''}</div><div class="stat"><b style="color:var(--blue)">+${r.gems}</b>💎 кристаллы</div>
+  <div class="stat"><b style="color:var(--orange)">${r.user.streak}</b>🔥 серия дней</div><div class="stat"><b>${P.mistakes}</b>ошибок</div></div>
+  <button class="btn" onclick="$('#player').remove();home()">Продолжить</button></div>`;
+}
+
+// ---------- Задания ----------
+async function tasks() {
+  M('<div class="center"><div class="big">⏳</div></div>'); const { tasks } = await api('/tasks');
+  const st = t => !t.status ? '' : t.status === 'graded' ? `<span class="badge" style="background:var(--green);color:#fff">Оценка: ${t.score}/100</span>` : '<span class="badge">На проверке</span>';
+  M(`<div class="h">Задания от учителя</div>` + (tasks.length ? tasks.map(t => `<div class="card" onclick="taskOpen(${t.id})"><b>${esc(t.title)}</b> ${st(t)}<div class="muted" style="margin-top:6px">⚡ до ${t.xp} опыта</div></div>`).join('') : '<div class="card muted">Пока заданий нет. Учитель добавит их здесь.</div>'));
+  S.tasks = tasks;
+}
+function taskOpen(id) {
+  const t = S.tasks.find(x => x.id === id), locked = t.status === 'graded';
+  const sh = document.createElement('div'); sh.className = 'sheet'; sh.onclick = e => { if (e.target === sh) sh.remove(); };
+  sh.innerHTML = `<div style="max-height:90%;overflow:auto"><div class="h" style="margin:0 0 8px">${esc(t.title)}</div><div style="white-space:pre-wrap;margin-bottom:12px">${esc(t.body)}</div>
+  ${t.feedback ? `<div class="card" style="margin:0 0 12px">💬 ${esc(t.feedback)}</div>` : ''}
+  <textarea id="tt" rows="5" placeholder="Ваш ответ..." ${locked ? 'disabled' : ''}>${esc(t.text || '')}</textarea>
+  ${locked ? '' : '<button class="btn" style="margin-top:12px" id="sb">Отправить</button>'}</div>`;
+  const b = sh.querySelector('#sb'); if (b) b.onclick = async () => { try { await api(`/tasks/${id}/submit`, { text: $('#tt').value }); sh.remove(); toast('Отправлено учителю ✅', true); tasks(); } catch (e) { toast(e.message); } };
+  app.appendChild(sh);
+}
+
+// ---------- Рейтинг ----------
+async function rank() {
+  M('<div class="center"><div class="big">⏳</div></div>'); const r = await api('/leaderboard');
+  M(`<div class="h">Рейтинг по опыту</div>` + (r.top.length ? r.top.map((x, i) => `<div class="row ${x.id === r.me ? 'me' : ''}"><div class="n">${['🥇','🥈','🥉'][i] || i + 1}</div><div class="av">${x.avatar}</div><div style="flex:1"><b>${esc(x.first_name)}</b><div class="muted">@${esc(x.nick)} · 🔥${x.streak}</div></div><b style="color:var(--yellow)">⚡${x.xp}</b></div>`).join('') : '<div class="card muted">Пока никого. Пройдите урок — и вы первый!</div>'));
+}
+
+// ---------- Магазин ----------
+async function shop() {
+  M('<div class="center"><div class="big">⏳</div></div>'); await refresh(); const { items, avatars } = await api('/shop'); const u = S.user;
+  const it = (ic, k, d) => `<div class="card shop"><div class="ic">${ic}</div><div><b>${items[k].name}</b><div class="muted">${d}</div></div><button class="btn blue" onclick="buy('${k}')">💎 ${items[k].price}</button></div>`;
+  const nx = u.next_heart_in > 0 ? `Следующая жизнь через ${Math.ceil(u.next_heart_in / 60000)} мин` : 'Жизни полные';
+  M(`<div class="h">Магазин</div><div class="muted" style="margin:0 14px">У вас 💎 ${u.gems} · ❤️ ${u.role==='teacher'?'∞':u.hearts}/5 · ${nx}</div>` +
+    it('❤️', 'heart', 'Добавляет 1 жизнь') + it('💖', 'hearts_full', 'Восстановить все 5 жизней') + it('⚡', 'boost', u.boost_left > 0 ? `Активно ещё ${Math.ceil(u.boost_left / 60000)} мин` : 'Опыт за уроки x2') + it('🧊', 'freeze', `Сохранит серию, если пропустите день (есть: ${u.freezes}/2)`) +
+    `<div class="h">Аватарки</div><div class="avs">${Object.entries(avatars).map(([a, p]) => `<button class="${u.avatar === a ? 'on' : ''}" onclick="${u.owned.includes(a) ? `setAv('${a}')` : `buy('avatar:${a}')`}">${a}<small>${u.owned.includes(a) ? (u.avatar === a ? '✓' : 'есть') : '💎' + p}</small></button>`).join('')}</div>
+    <div class="card muted" style="margin-top:18px">Кристаллы 💎 вы получаете за пройденные уроки. Чем меньше ошибок — тем больше!</div>`);
+}
+async function buy(item) { try { const r = await api('/buy', { item }); S.user = r.user; hap('success'); toast('Куплено! 🎉', true); home(); } catch (e) { toast(e.message); } }
+async function setAv(a) { const r = await api('/settings', { avatar: a }); S.user = r.user; home(); }
+
+// ---------- Профиль ----------
+const BADGES = [['🌱', 'Первый урок', u => u.lessons_done >= 1], ['📚', '10 уроков', u => u.lessons_done >= 10], ['🏫', '50 уроков', u => u.lessons_done >= 50], ['💯', '100 уроков', u => u.lessons_done >= 100], ['🔥', 'Серия 3 дня', u => u.streak >= 3], ['🌋', 'Серия 7 дней', u => u.streak >= 7], ['⭐', '5 идеальных', u => u.perfect >= 5], ['⚡', '500 опыта', u => u.xp >= 500], ['👑', '1000 опыта', u => u.xp >= 1000]];
+async function me() {
+  await refresh(); const u = S.user, into = u.xp % 100;
+  M(`<div style="text-align:center;padding:20px 14px 0"><div class="av" style="width:96px;height:96px;font-size:56px;margin:0 auto">${u.avatar}</div><div class="h" style="margin:10px 0 0">${esc(u.first_name)} ${esc(u.last_name)}</div><div class="muted">@${esc(u.nick)}${u.role==='teacher'?' · 🎓 Учитель':''}</div></div>
+  <div class="card"><b>Уровень ${u.level}</b><div class="xpb"><i style="width:${into}%"></i></div><div class="muted">${into}/100 ⚡ до уровня ${u.level + 1}</div></div>
+  <div class="grid"><div class="stat"><b style="color:var(--orange)">🔥 ${u.streak}</b>серия дней</div><div class="stat"><b style="color:var(--yellow)">⚡ ${u.xp}</b>всего опыта</div><div class="stat"><b>${u.lessons_done}/${u.total_lessons}</b>уроков пройдено</div><div class="stat"><b>⭐ ${u.perfect}</b>идеальных</div></div>
+  <div class="h">Тема оформления</div><div class="seg"><button class="${u.theme==='dark'?'on':''}" onclick="setTheme('dark')">🌙 Тёмная</button><button class="${u.theme==='light'?'on':''}" onclick="setTheme('light')">☀️ Светлая</button></div>
+  ${u.role === 'teacher' ? '' : '<button class="btn ghost" style="margin:14px;width:calc(100% - 28px)" onclick="teacherLogin()">🎓 Я учитель</button>'}<div class="h">Достижения</div><div class="grid">${BADGES.map(([i, n, f]) => `<div class="stat" style="${f(u) ? '' : 'opacity:.35;filter:grayscale(1)'}"><b>${i}</b>${n}</div>`).join('')}</div>`);
+}
+async function setTheme(t) { const r = await api('/settings', { theme: t }); S.user = r.user; theme(); me(); }
+
+// ---------- Панель учителя ----------
+let TT = 'stats';
+function teacherLogin() {
+  const sh = document.createElement('div'); sh.className = 'sheet'; sh.onclick = e => { if (e.target === sh) sh.remove(); };
+  sh.innerHTML = `<div><div class="h" style="margin:0 0 8px">🎓 Вход для учителя</div><div class="muted">Введите пароль учителя (его задают при настройке базы).</div><label>Пароль</label><input id="tp" type="password" autocomplete="off"><button class="btn" style="margin-top:12px" id="tb1">Войти</button></div>`;
+  sh.querySelector('#tb1').onclick = async () => { try { const r = await api('/claim-teacher', { key: $('#tp').value }); S.user = r.user; S.tab = 'teach'; sh.remove(); home(); } catch (e) { toast(e.message); } };
+  app.appendChild(sh);
+}
+function teach() {
+  if (!localStorage.getItem('adminKey')) { M('<div class="center"><div class="big">🔑</div><b>Нужен пароль учителя</b><button class="btn" onclick="teacherLogin()">Ввести пароль</button></div>'); return; }
+  M(`<div class="h">Панель учителя 🎓</div><div class="seg">${[['stats','📊 Статистика'],['users','👥 Ученики'],['hw','📝 Задания']].map(([k, l]) => `<button class="${TT===k?'on':''}" onclick="TT='${k}';teach()">${l}</button>`).join('')}</div><div id="tb"></div>`);
+  Promise.resolve(({ stats: tStats, users: tUsers, hw: tHw })[TT]()).catch(e => { if (/пароль/i.test(e.message)) { localStorage.removeItem('adminKey'); teach(); } else toast(e.message); });
+}
+const TB = h => { $('#tb').innerHTML = h; };
+async function tStats() {
+  const s = await api('/admin/stats'), mx = Math.max(1, ...s.days.map(d => d.lessons));
+  TB(`<div class="grid"><div class="stat"><b>${s.students}</b>учеников</div><div class="stat"><b style="color:var(--green)">${s.active_today}</b>активны сегодня</div><div class="stat"><b>${s.lessons_done}</b>уроков пройдено</div><div class="stat"><b>${s.avg_stars}</b>средняя оценка ⭐</div><div class="stat"><b>${s.total_xp}</b>⚡ всего опыта</div><div class="stat"><b style="color:var(--orange)">${s.pending}</b>ждут проверки</div></div>
+  <div class="card"><b>Уроки за 7 дней</b><div class="bars" style="margin-bottom:22px">${s.days.map(d => `<div style="height:${Math.max(3, d.lessons / mx * 100)}%" title="${d.students} уч."><span>${d.d.slice(3)}<br>${d.lessons}</span></div>`).join('')}</div></div>
+  <div class="card"><b>По уровням</b>${s.byLevel.length ? s.byLevel.map(l => `<div class="muted">${l.name}: ${l.n} прохождений</div>`).join('') : '<div class="muted">Пока нет данных</div>'}</div>
+  <div class="card"><b>Самые сложные уроки</b>${s.hard.length ? s.hard.map(h => `<div class="muted">${h.level_name} · ${esc(h.chapter_title)} · ${h.title}: ⭐${h.avg} (${h.n})</div>`).join('') : '<div class="muted">Пока нет данных</div>'}</div>`);
+}
+async function tUsers() {
+  const { users } = await api('/admin/users'); S.users = users;
+  TB(`<div class="card" style="padding:6px;overflow:auto"><table class="tbl"><tr><th></th><th>Ученик</th><th>⚡</th><th>Уроки</th><th>🔥</th><th>Был</th></tr>${users.map(u => `<tr onclick="userSheet(${u.id})"><td>${u.avatar}</td><td><b>${esc(u.first_name)} ${esc(u.last_name || '')}</b><br><span class="muted">@${esc(u.nick)}${u.role === 'teacher' ? ' 🎓' : ''}</span></td><td>${u.xp}</td><td>${u.lessons}</td><td>${u.streak}</td><td>${u.last_day ? u.last_day.slice(5) : '—'}</td></tr>`).join('')}</table></div><div class="muted" style="margin:0 14px">Нажмите на ученика, чтобы выдать награду.</div>`);
+}
+function userSheet(id) {
+  const u = S.users.find(x => x.id === id), sh = document.createElement('div'); sh.className = 'sheet'; sh.onclick = e => { if (e.target === sh) sh.remove(); };
+  sh.innerHTML = `<div><div class="h" style="margin:0">${u.avatar} ${esc(u.first_name)}</div><div class="muted">@${esc(u.nick)} · ⚡${u.xp} · 💎${u.gems}</div>
+  <label>Подарить 💎</label><input id="gg" type="number" value="10"><label>Подарить ⚡ опыта</label><input id="gx" type="number" value="0">
+  <button class="btn" style="margin-top:12px" id="g1">Выдать награду</button><button class="btn ghost" style="margin-top:10px" id="g2">❤️ Восстановить жизни</button>
+  <button class="btn ghost" style="margin-top:10px" id="g3">${u.role === 'teacher' ? 'Сделать учеником' : '🎓 Сделать учителем'}</button></div>`;
+  sh.querySelector('#g1').onclick = async () => { await api('/admin/gift', { userId: id, gems: $('#gg').value, xp: $('#gx').value }); sh.remove(); toast('Готово ✅', true); tUsers(); };
+  sh.querySelector('#g2').onclick = async () => { await api('/admin/gift', { userId: id, hearts: 1 }); sh.remove(); toast('Жизни восстановлены ❤️', true); };
+  sh.querySelector('#g3').onclick = async () => { await api('/admin/role', { userId: id, role: u.role === 'teacher' ? 'student' : 'teacher' }); sh.remove(); tUsers(); };
+  app.appendChild(sh);
+}
+async function tHw() {
+  const { submissions: ss } = await api('/admin/submissions'); S.subs = ss;
+  TB(`<div class="card"><b>Новое задание</b><label>Заголовок</label><input id="nt"><label>Текст задания</label><textarea id="nb" rows="4"></textarea><label>Максимум ⚡ опыта</label><input id="nx" type="number" value="50"><button class="btn" style="margin-top:12px" onclick="addTask()">Опубликовать</button></div>
+  <div class="h">Ответы учеников</div>` + (ss.length ? ss.map(s => `<div class="card" onclick="gradeSheet(${s.id})"><b>${esc(s.first_name)} ${esc(s.last_name || '')}</b> <span class="muted">@${esc(s.nick)}</span> ${s.status === 'graded' ? `<span class="badge" style="background:var(--green);color:#fff">${s.score}/100</span>` : '<span class="badge">новый</span>'}<div class="muted">${esc(s.title)}</div><div style="margin-top:6px">${esc(s.text.slice(0, 120))}</div></div>`).join('') : '<div class="card muted">Пока нет ответов</div>'));
+}
+async function addTask() { try { await api('/admin/task', { title: $('#nt').value, body: $('#nb').value, xp: $('#nx').value }); toast('Задание опубликовано ✅', true); tHw(); } catch (e) { toast(e.message); } }
+function gradeSheet(id) {
+  const s = S.subs.find(x => x.id === id), sh = document.createElement('div'); sh.className = 'sheet'; sh.onclick = e => { if (e.target === sh) sh.remove(); };
+  sh.innerHTML = `<div style="max-height:90%;overflow:auto"><div class="h" style="margin:0">${esc(s.title)}</div><div class="muted">${esc(s.first_name)} · @${esc(s.nick)}</div><div class="card" style="margin:12px 0;white-space:pre-wrap">${esc(s.text)}</div>
+  <label>Оценка (0–100)</label><input id="sc" type="number" value="${s.score ?? 100}"><label>Комментарий</label><input id="fb" value="${esc(s.feedback || '')}"><button class="btn" style="margin-top:12px" id="gb">${s.status === 'graded' ? 'Обновить оценку' : 'Оценить'}</button></div>`;
+  sh.querySelector('#gb').onclick = async () => { const r = await api('/admin/grade', { id, score: $('#sc').value, feedback: $('#fb').value }); sh.remove(); toast(r.award ? `Ученик получил +${r.award} ⚡` : 'Сохранено', true); tHw(); };
+  app.appendChild(sh);
+}
+boot();
+</script>
+</body>
+</html>
