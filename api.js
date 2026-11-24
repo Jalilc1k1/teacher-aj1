@@ -17,7 +17,20 @@ async function rpc(fn, args) {
   return j;
 }
 async function loadLessons() { if (!_lessons) { const r = await fetch('lessons.json'); _lessons = await r.json(); } return _lessons; }
-const adminKey = () => localStorage.getItem('adminKey') || '';
+let _adminKey = null;
+const adminKey = () => _adminKey ?? (localStorage.getItem('adminKey') || '');
+// Пароль учителя сохраняем и в облаке Telegram (localStorage в Telegram иногда очищается)
+function saveAdminKey(k) {
+  _adminKey = k || ''; try { k ? localStorage.setItem('adminKey', k) : localStorage.removeItem('adminKey'); } catch (e) {}
+  try { const cs = _tg() && Telegram.WebApp.CloudStorage; if (cs && Telegram.WebApp.initData) k ? cs.setItem('adminKey', k) : cs.removeItem('adminKey'); } catch (e) {}
+}
+function loadAdminKey() {
+  return new Promise(res => {
+    const local = localStorage.getItem('adminKey');
+    try { const cs = _tg() && Telegram.WebApp.CloudStorage; if (cs && Telegram.WebApp.initData) { cs.getItem('adminKey', (err, v) => { _adminKey = v || local || ''; res(_adminKey); }); setTimeout(() => res(adminKey()), 1500); return; } } catch (e) {}
+    _adminKey = local || ''; res(_adminKey);
+  });
+}
 const SHOP = { heart: { name: 'Одна жизнь', price: 10 }, hearts_full: { name: 'Все жизни', price: 40 }, boost: { name: 'Двойной опыт на 1 час', price: 30 }, freeze: { name: 'Заморозка серии', price: 25 } };
 const AVATARS = { '🦉': 0, '🐱': 20, '🦊': 20, '🐼': 30, '🦁': 30, '🐸': 30, '🦄': 50, '🐲': 60, '🚀': 80, '👑': 100 };
 
@@ -55,7 +68,8 @@ async function api(path, b) {
   if (path === '/buy') return rpc('buy', { p_tg, p_item: String(b.item || '') });
   if (path === '/tasks') return rpc('tasks_list', { p_tg });
   if ((m = path.match(/^\/tasks\/(\d+)\/submit$/))) return rpc('task_submit', { p_tg, p_task: +m[1], p_text: b.text || '' });
-  if (path === '/claim-teacher') { const r = await rpc('claim_teacher', { p_tg, p_key: b.key }); localStorage.setItem('adminKey', b.key); return r; }
+  if (path === '/claim-teacher') { const r = await rpc('claim_teacher', { p_tg, p_key: b.key }); saveAdminKey(b.key); return r; }
+  if (path === '/lessons-raw') return loadLessons();
   // --- учитель ---
   const p_key = adminKey();
   if (path === '/admin/stats') {
@@ -64,6 +78,15 @@ async function api(path, b) {
     s.byLevel = s.byLevel.map(x => ({ ...x, name: L.levels[x.level - 1].name })); return s;
   }
   if (path === '/admin/users') return rpc('admin_users', { p_key });
+  if (path === '/announcement') return rpc('announcement_get', { p_tg });
+  if (path === '/admin/announce') return rpc('admin_announce', { p_key, p_text: b.text || '' });
+  if (path === '/admin/gift-all') return rpc('admin_gift_all', { p_key, p_gems: +b.gems || 0 });
+  if (path === '/admin/user-delete') return rpc('admin_user_delete', { p_key, p_user: +b.id });
+  if (path === '/admin/lessons') return rpc('admin_lessons', { p_key });
+  if (path === '/admin/overview') return rpc('admin_overview', { p_key });
+  if ((m = path.match(/^\/admin\/user\/(\d+)$/))) return rpc('admin_user', { p_key, p_user: +m[1] });
+  if (path === '/admin/tasks') return rpc('admin_tasks', { p_key });
+  if (path === '/admin/task-delete') return rpc('admin_task_delete', { p_key, p_id: +b.id });
   if (path === '/admin/gift') return rpc('admin_gift', { p_key, p_user: +b.userId, p_gems: +b.gems || 0, p_xp: +b.xp || 0, p_hearts: !!b.hearts });
   if (path === '/admin/role') return rpc('admin_role', { p_key, p_user: +b.userId, p_role: b.role });
   if (path === '/admin/task') return rpc('admin_task', { p_key, p_title: b.title || '', p_body: b.body || '', p_xp: +b.xp || 50 });
